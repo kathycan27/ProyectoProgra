@@ -21,7 +21,7 @@
           <text value="Bienvenidos"/>
         </properties>
       </component>
-      <component id="33dbf" class="javax.swing.JPasswordField" binding="password">
+      <component id="33dbf" class="javax.swing.JPasswordField" binding="txtclave">
         <constraints>
           <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -59,6 +59,7 @@
         </constraints>
         <properties>
           <model>
+            <item value="Seleccione cargo"/>
             <item value="Administrador"/>
             <item value="Cajero"/>
           </model>
