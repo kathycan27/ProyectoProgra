@@ -10,7 +10,7 @@ public class ingresoproductos {
     private JTextField txtprecio;
     private JButton registrarButton;
     private JTextField txtcodigo;
-    private JPanel panelp;
+    JPanel panelp;
     private JButton salirButton;
     Connection connection;
     Statement statement;

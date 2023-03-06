@@ -1,5 +1,6 @@
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -257,7 +258,11 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
                 try {
                     String ruta=System.getProperty("user.home");
                     PdfWriter.getInstance(document, new FileOutputStream("reporte.pdf"));
-                    //document.open();Image img=Image.getInstance("img/descargar.png");
+
+                    document.open();
+                    Paragraph titulo = new Paragraph("FACTURAR");
+                    titulo.setAlignment(1);
+
                     PdfPTable table= new PdfPTable(5);
                     table.addCell("codigo");
                     table.addCell("producto");

@@ -25,7 +25,7 @@ public class administrador {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame frame=new JFrame("ingreso productos");
-                frame.setContentPane(new ingresoclientes().jpanelcli);
+                frame.setContentPane(new ingresoproductos().panelp);
                 frame.setSize(900,900);
 
                 frame.pack();
