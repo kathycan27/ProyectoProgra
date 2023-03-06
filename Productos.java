@@ -4,7 +4,7 @@ public class Productos {
     int codigo;
 
     public Productos() {
-        stock = 0;
+        stock=0;
         producto = "";
         codigo=0;
 

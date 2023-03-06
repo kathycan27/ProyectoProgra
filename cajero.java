@@ -29,6 +29,7 @@ public class cajero {
     private JTextField txtdisponible;
     private JTextField precio;
     private JButton btnbuscar;
+    private JLabel codigos;
     private JTextField txtstock;
     private JButton verStockButton;
     ResultSet rs;
@@ -41,6 +42,7 @@ public class cajero {
     Productos productos=new Productos();
     login login=new login();
     int stocktotal;
+    int codigogeneral;
 ArrayList pListaProductos;
 private  ArrayList<Productos> productosp;
     public void llenarProductos() {
@@ -87,7 +89,7 @@ private  ArrayList<Productos> productosp;
         return pProductoP;
     }
 
-
+String co= String.valueOf(productos.getCodigo());
     public cajero() {
 con=getConection();
 pListaProductos=new ArrayList();
@@ -97,6 +99,8 @@ llenarProductos();
             @Override
             public void actionPerformed(ActionEvent e) {
                 comboBox1.getSelectedItem().toString();
+                //co= String.valueOf(productos.getCodigo());
+                codigos.setText(co);
 
             }
         });
@@ -131,19 +135,22 @@ llenarProductos();
         comprarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                txtstock.getText();
+                txtcantidad.getText();
                 int cantidad;
                 int venta= Integer.parseInt(txtcantidad.getText());
                 cantidad=stocktotal-venta;
                 try{
-                    con = getConection();
-                    st = con.prepareStatement("UPDATE prfrutas SET stock = ? WHERE producto ="+productos.getCodigo());
+                 con = getConection();
+                    ps = con.prepareStatement("UPDATE prfrutas SET codigo = ?, producto = ? ,stock  = ? ,precio = ?  WHERE codigo ="+txtcodigo.getText());
+
+                    ps.setString(1, String.valueOf(txtcodigo));
+                    ps.setString(2,txtproducto.getText());
+                    ps.setString(3, String.valueOf(cantidad));
+                    ps.setString(4, precio.getText());
 
 
-
-
-                    System.out.println(st);
-                    int res = st.executeUpdate();
+                    System.out.println(ps);
+                    int res = ps.executeUpdate();
 
                     if(res > 0 ){
                         JOptionPane.showMessageDialog(null,"La actualización se realizado con EXITO!");
@@ -167,7 +174,7 @@ llenarProductos();
                     con = getConection();
                     st = con.createStatement();
 
-                    rs = st.executeQuery("select * from prfrutas where producto=" + productos.getCodigo() + ";");
+                    rs = st.executeQuery("select * from prfrutas where codigo=" + productos.getCodigo()+ ";");
                     if(rs.next()){
                         do{
                             txtcodigo.setText(rs.getString("codigo"));
@@ -175,10 +182,11 @@ llenarProductos();
                             txtdisponible.setText(rs.getString("stock"));
                             precio.setText(rs.getString("precio"));
 stocktotal= Integer.parseInt(txtstock.getText());
+codigogeneral= Integer.parseInt(txtcodigo.getText());
                         }while (rs.next());
-                        JOptionPane.showMessageDialog(null,"cliente registrado");
+
                     }else {
-                        JOptionPane.showMessageDialog(null,"cliente aun no ha sido registrado || No se encuentra en la base de datos");
+                        JOptionPane.showMessageDialog(null," No se encuentra en la base de datos");
                     }
                 } catch (Exception s) {
                     System.out.println(s);

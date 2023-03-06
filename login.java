@@ -63,8 +63,8 @@ public class login {
                                 {
                                     if(acces==0)
                                     {
-                                        JFrame frame=new JFrame("Cajero");
-                                        frame.setContentPane(new cajero().panel2);
+                                        JFrame frame=new JFrame("ADMINISTRADOR");
+                                        frame.setContentPane(new administrador().panel3);
                                         frame.setSize(300,300);
                                         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                                         frame.pack();
@@ -94,7 +94,7 @@ public class login {
 
                                 statement = con.createStatement();
 
-                                rs = statement.executeQuery("SELECT * FROM prfrutas WHERE producto ="  + txtuser.getText()+";");
+                                rs = statement.executeQuery("SELECT * FROM usuario WHERE codigo ="  + txtuser.getText()+";");
                                 if(rs.next()){
                                     acces= Integer.parseInt(rs.getString("acceso"));
                                     clave=rs.getString("clave");
@@ -106,7 +106,12 @@ public class login {
                                     {
                                         if(acces==1)
                                         {
-                                            System.out.println("bienvenido");
+                                            JFrame frame=new JFrame("Cajero");
+                                            frame.setContentPane(new cajero().panel2);
+                                            frame.setSize(300,300);
+                                            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                                            frame.pack();
+                                            frame.setVisible(true);
                                         }else {
                                             JOptionPane.showMessageDialog(null,"usuario no registrado");
                                         }
