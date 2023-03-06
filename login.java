@@ -94,7 +94,7 @@ public class login {
 
                                 statement = con.createStatement();
 
-                                rs = statement.executeQuery("SELECT * FROM usuario WHERE codigo ="  + txtuser.getText()+";");
+                                rs = statement.executeQuery("SELECT * FROM prfrutas WHERE producto ="  + txtuser.getText()+";");
                                 if(rs.next()){
                                     acces= Integer.parseInt(rs.getString("acceso"));
                                     clave=rs.getString("clave");

@@ -1,11 +1,21 @@
 public class Productos {
     int stock;
     String producto;
+    int codigo;
 
     public Productos() {
         stock = 0;
         producto = "";
+        codigo=0;
 
+    }
+
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
     }
 
     public int getStock() {
@@ -26,6 +36,6 @@ public class Productos {
 
     @Override
     public String toString() {
-        return getProducto();
+        return getCodigo() +" "+ getProducto();
     }
 }

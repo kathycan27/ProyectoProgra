@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,7 +23,14 @@ public class cajero {
     private JButton comprarButton;
     private JTextField txttel;
     private JTextField txtapellido;
-    private JLabel txtstock;
+    private JTextField txtproducto;
+    private JLabel codigo;
+    private JTextField txtcodigo;
+    private JTextField txtdisponible;
+    private JTextField precio;
+    private JButton btnbuscar;
+    private JTextField txtstock;
+    private JButton verStockButton;
     ResultSet rs;
     Statement st;
     PreparedStatement ps;
@@ -31,6 +40,7 @@ public class cajero {
     int columnas;
     Productos productos=new Productos();
     login login=new login();
+    int stocktotal;
 ArrayList pListaProductos;
 private  ArrayList<Productos> productosp;
     public void llenarProductos() {
@@ -66,6 +76,7 @@ private  ArrayList<Productos> productosp;
                 pProductos=new Productos();
                 pProductos.setStock(resultado.getInt("stock"));
                 pProductos.setProducto(resultado.getString("producto"));
+                pProductos.setCodigo(resultado.getInt("codigo"));
                 pProductoP.add(pProductos);
             }
 
@@ -86,6 +97,7 @@ llenarProductos();
             @Override
             public void actionPerformed(ActionEvent e) {
                 comboBox1.getSelectedItem().toString();
+
             }
         });
         buscarButton.addActionListener(new ActionListener() {
@@ -115,24 +127,68 @@ llenarProductos();
                 }
             }
         });
-        int stockd ;
+
         comprarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-               try {
+                txtstock.getText();
+                int cantidad;
+                int venta= Integer.parseInt(txtcantidad.getText());
+                cantidad=stocktotal-venta;
+                try{
+                    con = getConection();
+                    st = con.prepareStatement("UPDATE prfrutas SET stock = ? WHERE producto ="+productos.getCodigo());
+
+
+
+
+                    System.out.println(st);
+                    int res = st.executeUpdate();
+
+                    if(res > 0 ){
+                        JOptionPane.showMessageDialog(null,"La actualización se realizado con EXITO!");
+
+
+                    }else{
+                        JOptionPane.showMessageDialog(null,"Error, producto no registrado");
+                    }
+                    con.close();
+                }catch (SQLException f){
+                    System.out.println(f);
+                }
+            }
+        });
+
+
+        btnbuscar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
                     con = getConection();
                     st = con.createStatement();
 
-                    rs = st.executeQuery("select * from profrutas where stock=");
+                    rs = st.executeQuery("select * from prfrutas where producto=" + productos.getCodigo() + ";");
                     if(rs.next()){
-                        stockd=rs.getInt("stock");
-
+                        do{
+                            txtcodigo.setText(rs.getString("codigo"));
+                            txtproducto.setText(rs.getString("producto"));
+                            txtdisponible.setText(rs.getString("stock"));
+                            precio.setText(rs.getString("precio"));
+stocktotal= Integer.parseInt(txtstock.getText());
+                        }while (rs.next());
+                        JOptionPane.showMessageDialog(null,"cliente registrado");
                     }else {
-                        JOptionPane.showMessageDialog(null,"El producto aun no ha sido registrado || No se encuentra en la base de datos");
+                        JOptionPane.showMessageDialog(null,"cliente aun no ha sido registrado || No se encuentra en la base de datos");
                     }
                 } catch (Exception s) {
-
+                    System.out.println(s);
                 }
+            }
+        });
+        txtcantidad.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
             }
         });
     }
@@ -146,7 +202,7 @@ llenarProductos();
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(url, user, password);
-            System.out.println("si se conecto");
+            //System.out.println("si se conecto");
         } catch (ClassNotFoundException | SQLException e) {
             System.err.println(e);
         }
