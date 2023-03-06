@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -15,21 +16,21 @@ public class cajero {
     private JTextField txtcantidad;
     private JButton registrarButton;
     private JButton buscarButton;
-    private JTextField txtcedulacli;
     private JTextField txtdireccion;
-    private JTextField txtsexo;
+    private JLabel txtsexo;
     private JLabel txtnombre;
-    private JTable table1;
     private JButton comprarButton;
-    private JTextField txttel;
-    private JTextField txtapellido;
-    private JTextField txtproducto;
+    private JLabel txttel;
+    private JLabel txtapellido;
+    private JLabel txtproducto;
     private JLabel codigo;
-    private JTextField txtcodigo;
-    private JTextField txtdisponible;
+    private JLabel txtcodigo;
+    private JLabel txtdisponible;
     private JTextField precio;
     private JButton btnbuscar;
     private JLabel codigos;
+    private JLabel txtcedula;
+    private JLabel txtprecio;
     private JTextField txtstock;
     private JButton verStockButton;
     ResultSet rs;
@@ -41,6 +42,7 @@ public class cajero {
     int columnas;
     Productos productos=new Productos();
     login login=new login();
+    float total=0;
     int stocktotal;
     int codigogeneral;
 ArrayList pListaProductos;
@@ -98,9 +100,9 @@ llenarProductos();
         comboBox1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                comboBox1.getSelectedItem().toString();
+                comboBox1.getSelectedItem();
                 //co= String.valueOf(productos.getCodigo());
-                codigos.setText(co);
+                codigos.setText(String.valueOf(comboBox1.getSelectedIndex()));
 
             }
         });
@@ -121,6 +123,7 @@ llenarProductos();
                             txttel.setText(rs.getString("telefono"));
                             txtdireccion.setText(rs.getString("direccion"));
                             txtsexo.setText(rs.getString("sexo"));
+
                         }while (rs.next());
                         JOptionPane.showMessageDialog(null,"cliente registrado");
                     }else {
@@ -136,29 +139,59 @@ llenarProductos();
             @Override
             public void actionPerformed(ActionEvent e) {
                 txtcantidad.getText();
-                int cantidad;
+                int cantidad= Integer.parseInt(txtdisponible.getText());
                 int venta= Integer.parseInt(txtcantidad.getText());
-                cantidad=stocktotal-venta;
+                int cambiostock=cantidad-venta;
+                float costo= Float.parseFloat(txtprecio.getText());
+                total=costo*venta;
+                System.out.println(total);
+
+                System.out.println(cambiostock);
                 try{
                  con = getConection();
-                    ps = con.prepareStatement("UPDATE prfrutas SET codigo = ?, producto = ? ,stock  = ? ,precio = ?  WHERE codigo ="+txtcodigo.getText());
+                 if(cantidad>=venta){
+                    ps = con.prepareStatement("UPDATE prfrutas SET stock = ? WHERE codigo ="+codigos.getText());
 
-                    ps.setString(1, String.valueOf(txtcodigo));
-                    ps.setString(2,txtproducto.getText());
-                    ps.setString(3, String.valueOf(cantidad));
-                    ps.setString(4, precio.getText());
-
-
-                    System.out.println(ps);
+                    ps.setString(1, String.valueOf(cambiostock));
                     int res = ps.executeUpdate();
+                     try {
 
-                    if(res > 0 ){
-                        JOptionPane.showMessageDialog(null,"La actualización se realizado con EXITO!");
+                         ps = con.prepareStatement("INSERT INTO carrito(codigo,producto,venta,preciou,preciop) VALUES (?,?,?,?,?)");
+
+
+                         ps.setString(1, txtcodigo.getText());
+                         ps.setString(2, txtproducto.getText());
+                         ps.setString(3, txtcantidad.getText());
+                         ps.setString(4, txtprecio.getText());
+                         ps.setString(5, String.valueOf(total));
+
+
+                         int res1 = ps.executeUpdate();
+
+                         if (res1 > 0) {
+                             JOptionPane.showMessageDialog(null, "Se creo de manera correta");
+                             txtcodigo.setText("");
+                             txtnombre.setText("");
+                             txtprecio.setText("");
+                             txtcantidad.setText("");
+                         }
+
+                     } catch (HeadlessException | SQLException f) {
+                         System.out.println(f);
+
+                     }
+
+
+                    if(res > 0 ) {
+                        JOptionPane.showMessageDialog(null, "PRODUCTO AGREGADO AL CARRITO!");
 
 
                     }else{
-                        JOptionPane.showMessageDialog(null,"Error, producto no registrado");
-                    }
+                    }}
+                 else {
+                     JOptionPane.showMessageDialog(null,"NO HAY SUFICIENTE STOCK");
+
+                 }
                     con.close();
                 }catch (SQLException f){
                     System.out.println(f);
@@ -174,13 +207,14 @@ llenarProductos();
                     con = getConection();
                     st = con.createStatement();
 
-                    rs = st.executeQuery("select * from prfrutas where codigo=" + productos.getCodigo()+ ";");
+                    rs = st.executeQuery("select * from prfrutas where codigo=" + codigos.getText()+ ";");
                     if(rs.next()){
                         do{
                             txtcodigo.setText(rs.getString("codigo"));
                             txtproducto.setText(rs.getString("producto"));
                             txtdisponible.setText(rs.getString("stock"));
-                            precio.setText(rs.getString("precio"));
+                            txtprecio.setText(rs.getString("precio"));
+                            codigos.setText(rs.getString("codigo"));
 stocktotal= Integer.parseInt(txtstock.getText());
 codigogeneral= Integer.parseInt(txtcodigo.getText());
                         }while (rs.next());
@@ -197,6 +231,17 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
             @Override
             public void actionPerformed(ActionEvent e) {
 
+            }
+        });
+        registrarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame frame=new JFrame("REGISTRO CLIENTES");
+                frame.setContentPane(new ingresoclientes().jpanelcli);
+                frame.setSize(900,900);
+
+                frame.pack();
+                frame.setVisible(true);
             }
         });
     }

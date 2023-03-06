@@ -36,6 +36,6 @@ public class Productos {
 
     @Override
     public String toString() {
-        return getCodigo() +" "+ getProducto();
+        return  getProducto();
     }
 }

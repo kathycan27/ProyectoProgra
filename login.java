@@ -7,7 +7,8 @@ import java.awt.event.ComponentEvent;
 import java.sql.*;
 
 public class login {
-    private JPanel panel1;
+    public Container panel2;
+    JPanel panel1;
     private JTextField txtuser;
     private JPasswordField txtclave;
     private JComboBox comboBox;
