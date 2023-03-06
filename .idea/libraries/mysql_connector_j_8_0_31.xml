@@ -2,8 +2,11 @@
   <library name="mysql-connector-j-8.0.31">
     <CLASSES>
       <root url="jar://$USER_HOME$/Downloads/mysql-connector-j-8.0.31/mysql-connector-j-8.0.31.jar!/" />
+      <root url="jar://$PROJECT_DIR$/drivers/itext5-itextpdf-5.5.12.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Downloads/itext5-itextpdf-5.5.12-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES />
   </library>
 </component>

@@ -1,10 +1,15 @@
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,7 +36,8 @@ public class cajero {
     private JLabel codigos;
     private JLabel txtcedula;
     private JLabel txtprecio;
-    private JTextField txtstock;
+    private JButton generarReporteButton;
+
     private JButton verStockButton;
     ResultSet rs;
     Statement st;
@@ -169,7 +175,7 @@ llenarProductos();
                          int res1 = ps.executeUpdate();
 
                          if (res1 > 0) {
-                             JOptionPane.showMessageDialog(null, "Se creo de manera correta");
+
                              txtcodigo.setText("");
                              txtnombre.setText("");
                              txtprecio.setText("");
@@ -215,7 +221,7 @@ llenarProductos();
                             txtdisponible.setText(rs.getString("stock"));
                             txtprecio.setText(rs.getString("precio"));
                             codigos.setText(rs.getString("codigo"));
-stocktotal= Integer.parseInt(txtstock.getText());
+stocktotal= Integer.parseInt(txtdisponible.getText());
 codigogeneral= Integer.parseInt(txtcodigo.getText());
                         }while (rs.next());
 
@@ -242,6 +248,51 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
 
                 frame.pack();
                 frame.setVisible(true);
+            }
+        });
+        generarReporteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Document document= new Document();
+                try {
+                    String ruta=System.getProperty("user.home");
+                    PdfWriter.getInstance(document, new FileOutputStream("reporte.pdf"));
+                    //document.open();Image img=Image.getInstance("img/descargar.png");
+                    PdfPTable table= new PdfPTable(5);
+                    table.addCell("codigo");
+                    table.addCell("producto");
+                    table.addCell("unidades");
+                    table.addCell("precio_uni");
+                    table.addCell("precio_total");
+
+                    try
+                    {
+                      con=getConection();
+                      ps=con.prepareStatement("select * from carrito");
+                        System.out.println("entramis");
+                     rs=ps.executeQuery();
+    if(rs.next())
+    {
+        do {
+            table.addCell(rs.getString(1));
+            table.addCell(rs.getString(2));
+            table.addCell(rs.getString(3));
+            table.addCell(rs.getString(4));
+            table.addCell(rs.getString(5));
+        }while (rs.next());
+    }
+}catch (SQLException f)
+{
+    System.out.println(f);
+}
+document.close();
+JOptionPane.showMessageDialog(null,"creado");
+
+
+                }catch (HeadlessException | FileNotFoundException | DocumentException exception)
+                {
+                    System.out.println(exception);
+                }
             }
         });
     }
