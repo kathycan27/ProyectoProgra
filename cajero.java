@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -42,9 +43,16 @@ public class cajero {
     private JLabel txtcedula;
     private JLabel txtprecio;
     private JButton generarReporteButton;
-    private JButton finalizarCompraButton;
+    private JButton btncambio;
+    private JLabel txtsubtotal;
+    private JLabel txtnumproductos;
+    private JTextField txtdinero;
+    private JLabel txtcambio;
+    private JButton btnfin;
+    private JButton btnclaventa;
 
     private JButton verStockButton;
+    Double dinero;
     ResultSet rs;
     Statement st;
     PreparedStatement ps;
@@ -63,6 +71,11 @@ String nombrecliente, direccioncli, telefonocli, cedulacli;
     int codigogeneral;
 ArrayList pListaProductos;
 private  ArrayList<Productos> productosp;
+
+    DecimalFormat df=new DecimalFormat("###.##");
+
+
+
     public void llenarProductos() {
         con=getConection();
 
@@ -273,7 +286,7 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
             @Override
             public void actionPerformed(ActionEvent e) {
                 Document document= new Document();
-                 int j=2;
+
                 try {
                     String ruta=System.getProperty("user.home");
                     PdfWriter.getInstance(document, new FileOutputStream(ruta +"/Desktop/reporte.pdf"));
@@ -312,6 +325,7 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
                     table.addCell("precio_uni");
                     table.addCell("precio_total");
 
+
                     try
                     {
                       con=getConection();
@@ -333,7 +347,9 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
             totalproductos= Integer.parseInt(rs.getString("venta"));
             pasoproducto= pasoproducto+totalproductos;
             sumaproductos= Float.parseFloat(rs.getString("preciop"));
-            pasoventa=pasoventa+sumaproductos;
+            pasoventa= Float.parseFloat(df.format(pasoventa+sumaproductos));
+            txtsubtotal.setText(String.valueOf(pasoventa));
+            txtnumproductos.setText(String.valueOf(pasoproducto));
 
 
 
@@ -356,6 +372,71 @@ JOptionPane.showMessageDialog(null,"creado");
                 }catch (HeadlessException | DocumentException | IOException exception)
                 {
                     System.out.println(exception);
+                }
+            }
+        });
+        btncambio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        txtdinero.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                txtdinero.getText();
+
+
+
+            }
+        });
+        btncambio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                double cambios= Math.round(Double.parseDouble(txtdinero.getText()));
+                System.out.println(cambios);
+                float vuelto= Float.parseFloat(df.format(cambios-pasoventa));
+                txtcambio.setText(String.valueOf(vuelto));
+            }
+        });
+        btnfin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Icon logo=new ImageIcon(getClass().getResource("imagenes/dongato.png"));
+                JOptionPane.showMessageDialog(null,"Gracias por su compra vuelta pronto", "DON GATO MINIMARKET",JOptionPane.PLAIN_MESSAGE,logo);
+                 }
+        });
+        btnclaventa.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try
+                {
+                    con=getConection();
+                    ps=con.prepareStatement("select * from carrito");
+
+                    rs=ps.executeQuery();
+                    if(rs.next())
+                    {
+                        do {
+
+
+                            totalproductos= Integer.parseInt(rs.getString("venta"));
+                            pasoproducto= pasoproducto+totalproductos;
+                            sumaproductos= Float.parseFloat(rs.getString("preciop"));
+                            pasoventa= Float.parseFloat(df.format(pasoventa+sumaproductos));
+                            txtsubtotal.setText(String.valueOf(pasoventa));
+                            txtnumproductos.setText(String.valueOf(pasoproducto));
+
+
+                        }while (rs.next());
+
+                        System.out.println(pasoproducto+"costo total"+pasoventa);
+
+                    }
+                }catch (SQLException f)
+                {
+                    System.out.println(f);
                 }
             }
         });
