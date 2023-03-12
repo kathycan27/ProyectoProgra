@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class cajero {
+     static String dcjero;
     JPanel panel2;
     private JTextField txtbuscar;
     private JComboBox comboBox1;
@@ -50,6 +51,7 @@ public class cajero {
     private JLabel txtcambio;
     private JButton btnfin;
     private JButton btnclaventa;
+    private JLabel txtcajero;
 
     private JButton verStockButton;
     Double dinero;
@@ -71,6 +73,7 @@ String nombrecliente, direccioncli, telefonocli, cedulacli;
     int codigogeneral;
 ArrayList pListaProductos;
 private  ArrayList<Productos> productosp;
+    Document document= new Document();
 
     DecimalFormat df=new DecimalFormat("###.##");
 
@@ -121,10 +124,16 @@ private  ArrayList<Productos> productosp;
     }
 
 String co= String.valueOf(productos.getCodigo());
-    public cajero() {
-con=getConection();
-pListaProductos=new ArrayList();
-llenarProductos();
+    public boolean validar(String ventan)
+    {
+        return ventan.matches("[0-100]*");
+    }
+    public cajero(String dcjero) {
+        this.dcjero=dcjero;
+        txtcajero.setText(dcjero);
+        con=getConection();
+        pListaProductos=new ArrayList();
+        llenarProductos();
 
         comboBox1.addActionListener(new ActionListener() {
             @Override
@@ -175,21 +184,32 @@ llenarProductos();
             @Override
             public void actionPerformed(ActionEvent e) {
                 txtcantidad.getText();
-                int cantidad= Integer.parseInt(txtdisponible.getText());
-                int venta= Integer.parseInt(txtcantidad.getText());
-                int cambiostock=cantidad-venta;
-                float costo= Float.parseFloat(txtprecio.getText());
-                total=costo*venta;
-                System.out.println(total);
 
-                System.out.println(cambiostock);
+
+                //System.out.println(cambiostock);
+
+                boolean isNumeric =false;
+                        isNumeric=(txtcantidad.getText().trim()!= null && txtcantidad.getText().matches("[0-9]"));
+                if(isNumeric==true)
+                {
+
+                    int cantidad= Integer.parseInt(txtdisponible.getText());
+                    int venta= Integer.parseInt(txtcantidad.getText());
+                    int cambiostock=cantidad-venta;
+                    float costo= Float.parseFloat(txtprecio.getText());
+                    total=costo*venta;
+                    System.out.println(total);
                 try{
                  con = getConection();
-                 if(cantidad>=venta){
-                    ps = con.prepareStatement("UPDATE prfrutas SET stock = ? WHERE codigo ="+codigos.getText());
 
-                    ps.setString(1, String.valueOf(cambiostock));
-                    int res = ps.executeUpdate();
+
+                 if(venta>0){
+
+                     if(cantidad>=venta){
+                     ps = con.prepareStatement("UPDATE prfrutas SET stock = ? WHERE codigo =" + codigos.getText());
+
+                     ps.setString(1, String.valueOf(cambiostock));
+                     int res = ps.executeUpdate();
                      try {
 
                          ps = con.prepareStatement("INSERT INTO carrito(codigo,producto,venta,preciou,preciop) VALUES (?,?,?,?,?)");
@@ -218,19 +238,32 @@ llenarProductos();
                      }
 
 
-                    if(res > 0 ) {
-                        JOptionPane.showMessageDialog(null, "PRODUCTO AGREGADO AL CARRITO!");
+                     if (res > 0) {
+                         JOptionPane.showMessageDialog(null, "PRODUCTO AGREGADO AL CARRITO!");
 
 
-                    }else{
-                    }}
+                     } else {
+                     }
+
+
+                 }else {
+    JOptionPane.showMessageDialog(null,"NO HAY SUFICIENTE STOCK");
+
+                 }}
                  else {
-                     JOptionPane.showMessageDialog(null,"NO HAY SUFICIENTE STOCK");
+                     JOptionPane.showMessageDialog(null,"NO SE PUEDE VENDER 0 PRODUCTOS");
 
                  }
+
+
+
                     con.close();
                 }catch (SQLException f){
                     System.out.println(f);
+                }}
+
+                else {
+                   JOptionPane.showMessageDialog(null,"Debe ingresar numeros");
                 }
             }
         });
@@ -251,8 +284,8 @@ llenarProductos();
                             txtdisponible.setText(rs.getString("stock"));
                             txtprecio.setText(rs.getString("precio"));
                             codigos.setText(rs.getString("codigo"));
-stocktotal= Integer.parseInt(txtdisponible.getText());
-codigogeneral= Integer.parseInt(txtcodigo.getText());
+                            stocktotal= Integer.parseInt(txtdisponible.getText());
+                            codigogeneral= Integer.parseInt(txtcodigo.getText());
 
                         }while (rs.next());
 
@@ -285,7 +318,8 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
         generarReporteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Document document= new Document();
+
+
 
                 try {
                     String ruta=System.getProperty("user.home");
@@ -296,12 +330,15 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
 
                     LocalDate hoy = LocalDate.now();
                     LocalTime ahora = LocalTime.now();
+                    System.out.println(hoy);
                     LocalDateTime fecha = LocalDateTime.of(hoy, ahora);
                     Paragraph fech= new Paragraph(String.valueOf(fecha));
                     Paragraph tienda=new Paragraph("FACTURA:"+numf+"\nMinimarket Don Gato"+"\nRuc:0000000000"+
-                            "\nDireccion: Sangolqui"+"\nTelefonos: 1800Dongato "+"\n--------------------------------" +
+                            "\nDireccion: Sangolqui"+"\nTelefonos: 1800Dongato "+"\nCajero"+txtcajero.getText()+
+                            "\n----------------------------------------------" +
                             ""+"\nNombre: "+nombrecliente+"\nRuc/CI: "
                              +cedulacli+"\nDireccion: "+direccioncli+"\nTelefóno: "+telefonocli);
+
                     tienda.setFont(FontFactory.getFont("Tahoma", 18, Font.NORMAL, BaseColor.DARK_GRAY));
                     PdfPTable encabezado= new PdfPTable(2);
                     encabezado.getDefaultCell().setBorder(Rectangle.NO_BORDER);
@@ -343,28 +380,52 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
             table.addCell(rs.getString(4));
             table.addCell(rs.getString(5));
 
-
-            totalproductos= Integer.parseInt(rs.getString("venta"));
-            pasoproducto= pasoproducto+totalproductos;
-            sumaproductos= Float.parseFloat(rs.getString("preciop"));
-            pasoventa= Float.parseFloat(df.format(pasoventa+sumaproductos));
-            txtsubtotal.setText(String.valueOf(pasoventa));
-            txtnumproductos.setText(String.valueOf(pasoproducto));
-
-
-
-
-
-
         }while (rs.next());
 
         System.out.println(pasoproducto+"costo total"+pasoventa);
       document.add(table);
+      document.add(new Paragraph("\n \n"));
+        PdfPTable fin=new PdfPTable(1);
+        fin.setWidths(new int[]{5});
+        fin.addCell("Subtotal: $"+txtsubtotal.getText());
+        fin.addCell("Numero de productos: "+txtnumproductos.getText());
+        fin.addCell("Dinero entregado: $"+txtdinero.getText());
+        fin.addCell("Vuelto: $"+txtcambio.getText());
+        document.add(fin);
+
     }
 }catch (SQLException f)
 {
     System.out.println(f);
 }
+
+                    try {
+
+                        ps = con.prepareStatement("INSERT INTO venta(subtotal,numproductos,dinero,cambio) VALUES (?,?,?,?)");
+
+
+                        ps.setString(1, txtsubtotal.getText());
+                        ps.setString(2, txtnumproductos.getText());
+                        ps.setString(3, txtdinero.getText());
+                        ps.setString(4, txtcambio.getText());
+
+
+
+
+                        int res1 = ps.executeUpdate();
+
+                        if (res1 > 0) {
+
+                            txtsubtotal.setText("");
+                            txtnumproductos.setText("");
+                            txtdinero.setText("");
+                            txtcambio.setText("");
+                        }
+
+                    } catch (HeadlessException | SQLException f) {
+                        System.out.println(f);
+
+                    }
 document.close();
 JOptionPane.showMessageDialog(null,"creado");
 
@@ -375,12 +436,7 @@ JOptionPane.showMessageDialog(null,"creado");
                 }
             }
         });
-        btncambio.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-            }
-        });
 
         txtdinero.addActionListener(new ActionListener() {
             @Override
@@ -394,10 +450,20 @@ JOptionPane.showMessageDialog(null,"creado");
         btncambio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                double cambios= Math.round(Double.parseDouble(txtdinero.getText()));
-                System.out.println(cambios);
-                float vuelto= Float.parseFloat(df.format(cambios-pasoventa));
-                txtcambio.setText(String.valueOf(vuelto));
+                boolean isNumeric =false;
+                isNumeric=(txtdinero.getText().trim()!= null && txtdinero.getText().matches("[0-9]*"));
+                if(isNumeric==true) {
+                    double cambios = Math.round(Double.parseDouble(txtdinero.getText()));
+                    System.out.println(cambios);
+                    float vuelto = Float.parseFloat(df.format(cambios - pasoventa));
+                    txtcambio.setText(String.valueOf(vuelto));
+
+
+
+                }
+                else {
+                    JOptionPane.showMessageDialog(null,"Revise los valores ingresados");
+                }
             }
         });
         btnfin.addActionListener(new ActionListener() {
@@ -405,7 +471,21 @@ JOptionPane.showMessageDialog(null,"creado");
             public void actionPerformed(ActionEvent e) {
                 Icon logo=new ImageIcon(getClass().getResource("imagenes/dongato.png"));
                 JOptionPane.showMessageDialog(null,"Gracias por su compra vuelta pronto", "DON GATO MINIMARKET",JOptionPane.PLAIN_MESSAGE,logo);
-                 }
+
+                try {
+                    ps = con.prepareStatement("DELETE FROM carrito ");
+                    int res = ps.executeUpdate();
+
+                    if(res > 0 ){
+                        JOptionPane.showMessageDialog(null,"Se elemino con exito");
+                    }else{
+                        JOptionPane.showMessageDialog(null,"No existe el producto");
+                    }
+                }catch (HeadlessException | SQLException f){
+                    System.out.println(f);
+                }
+
+            }
         });
         btnclaventa.addActionListener(new ActionListener() {
             @Override
@@ -431,9 +511,9 @@ JOptionPane.showMessageDialog(null,"creado");
 
                         }while (rs.next());
 
-                        System.out.println(pasoproducto+"costo total"+pasoventa);
+con.close();
 
-                    }
+                    }System.out.println(pasoproducto+"costo total"+pasoventa);
                 }catch (SQLException f)
                 {
                     System.out.println(f);
@@ -459,7 +539,7 @@ JOptionPane.showMessageDialog(null,"creado");
     }
     public static void main(String[] args) {
         JFrame frame=new JFrame("Login");
-        frame.setContentPane(new cajero().panel2);
+        frame.setContentPane(new cajero(dcjero).panel2);
         frame.setSize(900,900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

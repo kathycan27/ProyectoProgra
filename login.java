@@ -22,6 +22,9 @@ public class login {
     int acces;
     String clave;
     String clavetxt ;
+    String nombrecajero;
+    String apecajero, datoscajero;
+
 
     public login() {
 
@@ -57,6 +60,7 @@ public class login {
                                 acces= Integer.parseInt(rs.getString("acceso"));
                                 clave=rs.getString("clave");
                                 clavetxt = txtclave.getText();
+
                                // System.out.println(clavetxt);
 
                                 System.out.println(clave);
@@ -100,6 +104,9 @@ public class login {
                                     acces= Integer.parseInt(rs.getString("acceso"));
                                     clave=rs.getString("clave");
                                     clavetxt = txtclave.getText();
+                                    nombrecajero= rs.getString("nombre");
+                                    apecajero=rs.getString("apellido");
+                                    datoscajero=nombrecajero+" "+apecajero;
                                     // System.out.println(clavetxt);
 
                                     //System.out.println(clave);
@@ -108,7 +115,7 @@ public class login {
                                         if(acces==1)
                                         {
                                             JFrame frame=new JFrame("Cajero");
-                                            frame.setContentPane(new cajero().panel2);
+                                            frame.setContentPane(new cajero(datoscajero).panel2);
                                             frame.setSize(300,300);
                                             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                                             frame.pack();

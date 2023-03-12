@@ -12,9 +12,11 @@ public class ingresoproductos {
     private JTextField txtcodigo;
     JPanel panelp;
     private JButton salirButton;
+    private JButton buscarButton;
+    private JButton actualizarButton;
     Connection connection;
     Statement statement;
-    PreparedStatement st;
+    PreparedStatement ps;
     ResultSet rs;
 
     public ingresoproductos() {
@@ -37,16 +39,16 @@ public class ingresoproductos {
                         } else {
                             try {
 
-                                st = connection.prepareStatement("INSERT INTO prfrutas (codigo,producto,stock,precio) VALUES (?,?,?,?)");
+                                ps = connection.prepareStatement("INSERT INTO prfrutas (codigo,producto,stock,precio) VALUES (?,?,?,?)");
 
 
-                                st.setString(1, txtcodigo.getText());
-                                st.setString(2, txtproducto.getText());
-                                st.setString(3, txtstock.getText());
-                                st.setString(4, txtprecio.getText());
+                                ps.setString(1, txtcodigo.getText());
+                                ps.setString(2, txtproducto.getText());
+                                ps.setString(3, txtstock.getText());
+                                ps.setString(4, txtprecio.getText());
 
 
-                                int res = st.executeUpdate();
+                                int res = ps.executeUpdate();
 
                                 if (res > 0) {
                                     JOptionPane.showMessageDialog(null, "Se creo de manera correta");
@@ -78,6 +80,70 @@ public class ingresoproductos {
                     frame.pack();
                     frame.setVisible(true);
 
+            }
+        });
+        buscarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                connection = getConection();
+                if (txtcodigo.getText().equals("")) {
+                    JOptionPane.showMessageDialog(null, "Uno varios campos vacios");
+                } else {
+                    try {
+
+                        statement = connection.createStatement();
+                        rs = statement.executeQuery("select * from prfrutas where codigo=" + txtcodigo.getText() + ";");
+
+
+                            if(rs.next()){
+                                do{
+                                    txtcodigo.setText(rs.getString("codigo"));
+                                    txtproducto.setText(rs.getString("producto"));
+                                    txtstock.setText(rs.getString("stock"));
+                                    txtprecio.setText(rs.getString("precio"));
+
+
+                                }while (rs.next());
+                        } else {
+
+
+                            System.out.println("e");
+                        }
+                    } catch (Exception s) {
+                        System.out.println(s);
+                    }
+                }
+            }
+        });
+        actualizarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try
+                {
+                    connection=getConection();
+                    ps = connection.prepareStatement("UPDATE prfrutas SET stock = ?, precio=?  WHERE codigo =" + txtcodigo.getText());
+
+                    ps.setString(1, txtstock.getText());
+                    ps.setString(2, txtprecio.getText());
+
+                    int res = ps.executeUpdate();
+
+                    if(res > 0 ){
+                        JOptionPane.showMessageDialog(null,"La actualización se realizado con EXITO!");
+                        txtcodigo.setText("");
+                        txtproducto.setText("");
+                        txtprecio.setText("");
+                        txtstock.setText("");
+
+                    }else{
+                        JOptionPane.showMessageDialog(null,"Error, producto no registrado");
+                    }
+                    connection.close();
+
+
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
     }
