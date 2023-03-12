@@ -1,6 +1,7 @@
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -9,9 +10,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -38,6 +42,7 @@ public class cajero {
     private JLabel txtcedula;
     private JLabel txtprecio;
     private JButton generarReporteButton;
+    private JButton finalizarCompraButton;
 
     private JButton verStockButton;
     ResultSet rs;
@@ -45,12 +50,16 @@ public class cajero {
     PreparedStatement ps;
     ResultSetMetaData rmd;
     DefaultTableModel model;
+    int i=0;
     Connection con;
     int columnas;
+    int totalproductos,pasoproducto;
+    float sumaproductos, pasoventa;
     Productos productos=new Productos();
     login login=new login();
     float total=0;
     int stocktotal;
+String nombrecliente, direccioncli, telefonocli, cedulacli;
     int codigogeneral;
 ArrayList pListaProductos;
 private  ArrayList<Productos> productosp;
@@ -129,10 +138,17 @@ llenarProductos();
                             txtapellido.setText(rs.getString("apellido"));
                             txttel.setText(rs.getString("telefono"));
                             txtdireccion.setText(rs.getString("direccion"));
+                            txtcedula.setText(rs.getString("cedula"));
                             txtsexo.setText(rs.getString("sexo"));
 
                         }while (rs.next());
                         JOptionPane.showMessageDialog(null,"cliente registrado");
+                        String datoscliente1=txtnombre.getText();
+                        String datoscliente2=txtapellido.getText();
+                        nombrecliente=datoscliente1+" "+datoscliente2;
+                        cedulacli=txtcedula.getText();
+                        direccioncli=txtdireccion.getText();
+                        telefonocli= txttel.getText();
                     }else {
                         JOptionPane.showMessageDialog(null,"cliente aun no ha sido registrado || No se encuentra en la base de datos");
                     }
@@ -224,6 +240,7 @@ llenarProductos();
                             codigos.setText(rs.getString("codigo"));
 stocktotal= Integer.parseInt(txtdisponible.getText());
 codigogeneral= Integer.parseInt(txtcodigo.getText());
+
                         }while (rs.next());
 
                     }else {
@@ -243,6 +260,7 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
         registrarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 JFrame frame=new JFrame("REGISTRO CLIENTES");
                 frame.setContentPane(new ingresoclientes().jpanelcli);
                 frame.setSize(900,900);
@@ -255,14 +273,38 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
             @Override
             public void actionPerformed(ActionEvent e) {
                 Document document= new Document();
+                 int j=2;
                 try {
                     String ruta=System.getProperty("user.home");
-                    PdfWriter.getInstance(document, new FileOutputStream("reporte.pdf"));
-
+                    PdfWriter.getInstance(document, new FileOutputStream(ruta +"/Desktop/reporte.pdf"));
                     document.open();
-                    Paragraph titulo = new Paragraph("FACTURAR");
-                    titulo.setAlignment(1);
+                    int numf=1;
 
+
+                    LocalDate hoy = LocalDate.now();
+                    LocalTime ahora = LocalTime.now();
+                    LocalDateTime fecha = LocalDateTime.of(hoy, ahora);
+                    Paragraph fech= new Paragraph(String.valueOf(fecha));
+                    Paragraph tienda=new Paragraph("FACTURA:"+numf+"\nMinimarket Don Gato"+"\nRuc:0000000000"+
+                            "\nDireccion: Sangolqui"+"\nTelefonos: 1800Dongato "+"\n--------------------------------" +
+                            ""+"\nNombre: "+nombrecliente+"\nRuc/CI: "
+                             +cedulacli+"\nDireccion: "+direccioncli+"\nTelefóno: "+telefonocli);
+                    tienda.setFont(FontFactory.getFont("Tahoma", 18, Font.NORMAL, BaseColor.DARK_GRAY));
+                    PdfPTable encabezado= new PdfPTable(2);
+                    encabezado.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+
+                    com.itextpdf.text.Image header = Image.getInstance("imagenes/dongato.png");
+                    // Tamaño
+                    header.scaleAbsolute(15,20);
+                    fech.setAlignment(Element.ALIGN_RIGHT);
+                    header.setAlignment(Element.ALIGN_CENTER);
+                    tienda.setAlignment(Element.ALIGN_CENTER);
+                    encabezado.addCell(tienda);
+                    encabezado.addCell(header);
+
+                        document.add(fech);
+                        document.add(encabezado);
+                        document.add(new Paragraph("\n"));
                     PdfPTable table= new PdfPTable(5);
                     table.addCell("codigo");
                     table.addCell("producto");
@@ -274,17 +316,34 @@ codigogeneral= Integer.parseInt(txtcodigo.getText());
                     {
                       con=getConection();
                       ps=con.prepareStatement("select * from carrito");
-                        System.out.println("entramis");
+
                      rs=ps.executeQuery();
     if(rs.next())
     {
         do {
+
+
             table.addCell(rs.getString(1));
             table.addCell(rs.getString(2));
             table.addCell(rs.getString(3));
             table.addCell(rs.getString(4));
             table.addCell(rs.getString(5));
+
+
+            totalproductos= Integer.parseInt(rs.getString("venta"));
+            pasoproducto= pasoproducto+totalproductos;
+            sumaproductos= Float.parseFloat(rs.getString("preciop"));
+            pasoventa=pasoventa+sumaproductos;
+
+
+
+
+
+
         }while (rs.next());
+
+        System.out.println(pasoproducto+"costo total"+pasoventa);
+      document.add(table);
     }
 }catch (SQLException f)
 {
@@ -294,7 +353,7 @@ document.close();
 JOptionPane.showMessageDialog(null,"creado");
 
 
-                }catch (HeadlessException | FileNotFoundException | DocumentException exception)
+                }catch (HeadlessException | DocumentException | IOException exception)
                 {
                     System.out.println(exception);
                 }
