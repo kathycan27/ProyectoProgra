@@ -27,7 +27,7 @@ stock int ,
 precio decimal(6,2)
 );
 insert into prfrutas(codigo, producto) values
-(0,"selleccione un articulo");
+(0,"seleccione un articulo");
 
 insert into prfrutas(codigo, producto, stock, precio) values
 (1,"manzana", 30, 0.25),
@@ -43,3 +43,11 @@ preciou decimal(6,2),
 preciop decimal(6,2)
 );
 select *from carrito;
+create table venta(
+factura int auto_increment primary key,
+subtotal decimal(8,2),
+numproductos int,
+dinero decimal(8,2),
+cambio decimal(8,2)
+)
+
